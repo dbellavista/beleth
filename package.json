@@ -1,12 +1,12 @@
 {
-  "name": "protonmail-api",
+  "name": "beleth",
   "version": "1.0.0",
-  "description": "ProtonMail API",
+  "description": "Beleth demon for syncing new music",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "git@github.com:dbellavista/protonmail-cli.git",
+  "repository": "git@github.com:dbellavista/beleth.git",
   "author": "Daniele Bellavista",
   "license": "ISC",
   "dependencies": {

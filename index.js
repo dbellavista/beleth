@@ -56,7 +56,6 @@ async function main() {
         let parsed = false;
         await pm.getMessageBody(message);
         const $ = cheerio.load(message.decryptedBody);
-        // TODO parse other
         if (message.sender.name === 'Bandcamp') {
           $('a[href*="bandcamp.com/album"],a[href*="bandcamp.com/track"]').each(
               function() {
