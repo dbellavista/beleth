@@ -76,6 +76,18 @@ async function main() {
               delete uobj.query;
               addMusic(url.format(uobj));
             });
+            if (!parsed) {
+              console.log(
+                  JSON.stringify(
+                      {
+                        subject: message.subject,
+                        body: message.decryptedBody,
+                      },
+                      null,
+                      ' '
+                  )
+              );
+            }
           } else if (message.sender.address === 'noreply@mixcloudmail.com') {
             if (message.subject === 'Weekly Update') {
               $('a').each(function() {
@@ -131,11 +143,11 @@ async function main() {
                 );
               }
             }
+          } else {
+            console.log(JSON.stringify(message, null, ' '));
           }
           if (parsed) {
             await pm.markAsRead(message);
-          } else {
-            console.log(JSON.stringify(message, null, ' '));
           }
         }
       }
