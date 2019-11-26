@@ -11,8 +11,11 @@ const {ProtonMail} = require('./lib/protonmail');
 const prompt = require('prompt');
 const cheerio = require('cheerio');
 const url = require('url');
+const fsPromises = require('fs').promises;
 
 async function main() {
+  const dest = await fsPromises.open(process.argv[2], 'w');
+
   prompt.start();
   const {user, password} = await new Promise((resolve, reject) =>
     prompt.get(
@@ -26,8 +29,8 @@ async function main() {
             hidden: true,
           },
         ],
-        (err, result) => (err ? reject(err) : resolve(result))
-    )
+        (err, result) => (err ? reject(err) : resolve(result)),
+    ),
   );
   const pm = new ProtonMail({
     user,
@@ -36,10 +39,16 @@ async function main() {
   });
   await pm.login();
   const newMusic = new Set();
-  const addMusic = (music) => {
-    if (!newMusic.has(music)) {
-      newMusic.add(music);
-      console.log(music);
+  const addMusic = async (music) => {
+    if (!Array.isArray(music)) {
+      return addMusic([music]);
+    }
+    for (const url of music) {
+      if (!newMusic.has(url)) {
+        newMusic.add(url);
+        console.log(url);
+        await dest.write(Buffer.from(`${url}\n`));
+      }
     }
   };
 
@@ -56,6 +65,8 @@ async function main() {
     for (const conversation of conversations) {
       if (conversation.messages.unread > 0) {
         await pm.getConversation(conversation);
+        const musicToAdd = [];
+
         for (const message of conversation.messages) {
           if (!message.unread) {
             continue;
@@ -65,7 +76,7 @@ async function main() {
           const $ = cheerio.load(message.decryptedBody);
           if (message.sender.name === 'Bandcamp') {
             $(
-                'a[href*="bandcamp.com/album"],a[href*="bandcamp.com/track"]'
+                'a[href*="bandcamp.com/album"],a[href*="bandcamp.com/track"]',
             ).each(function() {
               parsed = true;
               const el = $(this);
@@ -74,7 +85,7 @@ async function main() {
               delete uobj.search;
               delete uobj.hash;
               delete uobj.query;
-              addMusic(url.format(uobj));
+              musicToAdd.push(url.format(uobj));
             });
             if (!parsed) {
               console.log(
@@ -84,8 +95,8 @@ async function main() {
                         body: message.decryptedBody,
                       },
                       null,
-                      ' '
-                  )
+                      ' ',
+                  ),
               );
             }
           } else if (message.sender.address === 'noreply@mixcloudmail.com') {
@@ -103,7 +114,7 @@ async function main() {
               let titlee = /"(.*)" uploaded by/i.exec(message.subject);
               if (!titlee) {
                 titlee = /is sharing exclusive shows - (.*) By /i.exec(
-                    message.subject
+                    message.subject,
                 );
               }
               if (titlee) {
@@ -118,7 +129,7 @@ async function main() {
                         .toLowerCase()
                         .indexOf(title) >= 0
                   ) {
-                    addMusic(el.attr('href'));
+                    musicToAdd.push(el.attr('href'));
                     found = true;
                   }
                 });
@@ -129,7 +140,10 @@ async function main() {
                 });
               }
               parsed = found;
-              if (!found) {
+              if (
+                !found &&
+                !/sharing exclusive shows|^New Post/.test(message.subject)
+              ) {
                 console.log(
                     JSON.stringify(
                         {
@@ -138,8 +152,8 @@ async function main() {
                           links,
                         },
                         null,
-                        ' '
-                    )
+                        ' ',
+                    ),
                 );
               }
             }
@@ -150,11 +164,18 @@ async function main() {
             await pm.markAsRead(message);
           }
         }
+
+        await addMusic(musicToAdd);
       }
     }
   }
 
   await pm.logout();
+
+  await dest.close();
 }
 
-main();
+main().then(null, (err) => {
+  console.error(err);
+  process.exit(1);
+});
