@@ -55,7 +55,8 @@ async function main() {
       return;
     }
     const stringToWrite = info.map((ri) => {
-      return `${ri.title}
+      return `
+${ri.title}
   ${ri.url}
   ${ri.description.replace(/\n/g, ' ')
       .replace(/(.{76}\S+)\s*/g, '$1\n').replace(/\n/g, '\n  ').trim()}`;
