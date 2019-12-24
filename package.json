@@ -16,11 +16,11 @@
     "puppeteer": "^2.0.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.5",
+    "@babel/core": "^7.7.7",
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/plugin-proposal-private-methods": "^7.7.4",
-    "babel-eslint": "^11.0.0-beta.1",
-    "eslint": "^6.7.2",
+    "babel-eslint": "^11.0.0-beta.2",
+    "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0",
     "eslint-config-prettier": "^6.7.0",
     "prettier": "^1.19.1",
