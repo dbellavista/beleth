@@ -64,7 +64,6 @@ ${ri.title}
     await readingDest.write(Buffer.from(stringToWrite + '\n\n'));
   }, (info) => {
     console.log(JSON.stringify(info, null, ' '));
-    throw new Error('Stop');
   });
   try {
     await rInfoGetter.task();

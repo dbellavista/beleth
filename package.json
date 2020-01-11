@@ -1,6 +1,6 @@
 {
   "name": "beleth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Beleth demon for syncing new music",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "babel-eslint": "^11.0.0-beta.2",
     "eslint": "^6.8.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-config-prettier": "^6.7.0",
+    "eslint-config-prettier": "^6.9.0",
     "prettier": "^1.19.1",
     "prettier-eslint": "^9.0.1"
   }
