@@ -40,35 +40,47 @@ async function main() {
   });
   await pm.login();
 
-  const mlinkGetter = new MusicLinkGetter(pm, async (links) => {
-    if (links.length > 0) {
-      await musicDest.write(Buffer.from(`${links.join('\n')}\n`));
-    }
-  }, (info) => {
-    console.log(JSON.stringify(info, null, ' '));
-  });
+  const mlinkGetter = new MusicLinkGetter(
+      pm,
+      async (links) => {
+        if (links.length > 0) {
+          await musicDest.write(Buffer.from(`${links.join('\n')}\n`));
+        }
+      },
+      (info) => {
+        console.log(JSON.stringify(info, null, ' '));
+      },
+  );
   await mlinkGetter.task();
   await musicDest.close();
 
-  const rInfoGetter = new ReadingInfoGetter(pm, async (info) => {
-    if (info.length === 0) {
-      return;
-    }
-    const stringToWrite = info.map((ri) => {
-      return `
+  const rInfoGetter = new ReadingInfoGetter(
+      pm,
+      async (info) => {
+        if (info.length === 0) {
+          return;
+        }
+        const stringToWrite = info
+            .map((ri) => {
+              return `
 ${ri.title}
   ${ri.url}
-  ${ri.description.replace(/\n/g, ' ')
-      .replace(/(.{76}\S+)\s*/g, '$1\n').replace(/\n/g, '\n  ').trim()}`;
-    }).join('\n');
-    await readingDest.write(Buffer.from(stringToWrite + '\n\n'));
-  }, (info) => {
-    console.log(JSON.stringify(info, null, ' '));
-  });
+  ${ri.description
+      .replace(/\n/g, ' ')
+      .replace(/(.{76}\S+)\s*/g, '$1\n')
+      .replace(/\n/g, '\n  ')
+      .trim()}`;
+            })
+            .join('\n');
+        await readingDest.write(Buffer.from(stringToWrite + '\n\n'));
+      },
+      (info) => {
+        console.log(JSON.stringify(info, null, ' '));
+      },
+  );
   try {
     await rInfoGetter.task();
-  } catch (err) {
-  }
+  } catch (err) {}
   await readingDest.close();
 
   await pm.logout();
