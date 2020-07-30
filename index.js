@@ -17,7 +17,10 @@ const ReadingInfoGetter = require('./lib/reading-info-getter');
  */
 async function main() {
   const musicDest = await fsPromises.open(process.argv[2], 'wx');
-  const readingDest = await fsPromises.open(process.argv[3], 'wx');
+  let readingDest;
+  if (process.argv[3]) {
+    readingDest = await fsPromises.open(process.argv[3], 'wx');
+  }
 
   prompt.start();
   const {user, password} = await new Promise((resolve, reject) =>
@@ -56,15 +59,16 @@ async function main() {
   await mlinkGetter.task();
   await musicDest.close();
 
-  const rInfoGetter = new ReadingInfoGetter(
-    pm,
-    async (info) => {
-      if (info.length === 0) {
-        return;
-      }
-      const stringToWrite = info
-        .map((ri) => {
-          return `
+  if (readingDest) {
+    const rInfoGetter = new ReadingInfoGetter(
+      pm,
+      async (info) => {
+        if (info.length === 0) {
+          return;
+        }
+        const stringToWrite = info
+          .map((ri) => {
+            return `
 ${ri.title}
   ${ri.url}
   ${ri.description
@@ -72,19 +76,19 @@ ${ri.title}
     .replace(/(.{76}\S+)\s*/g, '$1\n')
     .replace(/\n/g, '\n  ')
     .trim()}`;
-        })
-        .join('\n');
-      await readingDest.write(Buffer.from(stringToWrite + '\n\n'));
-    },
-    (info) => {
-      console.log(JSON.stringify(info, null, ' '));
-    }
-  );
-  try {
-    await rInfoGetter.task();
-  } catch (err) {}
-  await readingDest.close();
-
+          })
+          .join('\n');
+        await readingDest.write(Buffer.from(stringToWrite + '\n\n'));
+      },
+      (info) => {
+        console.log(JSON.stringify(info, null, ' '));
+      }
+    );
+    try {
+      await rInfoGetter.task();
+    } catch (err) {}
+    await readingDest.close();
+  }
   await pm.logout();
 }
 
